@@ -1,4 +1,4 @@
-"""Common file operations"""
+"""Common operations"""
 
 import json
 import logging
@@ -62,5 +62,3 @@ def colorme(msg, color):
         # Defaults to white if invalid color is given
         wrapper = "\033[47m"
     return wrapper + msg + "\033[0m"
-
-
