@@ -1,6 +1,19 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
+<title>Quizy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="styles/w3.css">
+<link rel="shortcut icon" href="styles/favicon.ico">
+<script src="javascript/kwiz.js"></script>
+<body>
 
-{% block content %}
+
+<!-- HEADER SECTION -->
+<header class="w3-container w3-blue-gray w3-margin-bottom">
+    <h1>{{ config.quiz_title }}</h1>
+</header>
+
+
 <!-- CONTENT SECTION -->
 <div class="w3-panel">
     <h3 class="w3-text-blue-gray">Atomic Kwiz</h3>
@@ -18,17 +31,21 @@
     <div class="w3-panel w3-display-absolute">
         <p class="w3-text-blue-grey">created with ...</p>
         <a class="w3-button w3-hover-light-gray" href="https://www.python.org/">
-            <img alt="python-logo.png" class="align-center" src="../assets/uploads/python-logo1.png" />
+            <img alt="python-logo.png" class="align-center" src="images/python-logo1.png" />
         </a> | 
         <a class="w3-button w3-hover-light-gray" href="https://jinja.palletsprojects.com/en/3.1.x/">
-            <img alt="jinja-logo.png" class="align-center" src="../assets/uploads/jinja_logo_icon1.png" />
+            <img alt="jinja-logo.png" class="align-center" src="images/jinja_logo_icon1.png" />
         </a> |
         <a class="w3-button w3-hover-light-gray" href="https://www.w3schools.com/w3css/default.asp">
-            <img alt="w3css-logo.png" class="align-center" src="../assets/uploads/w3schools1.png" /> W3 CSS
+            <img alt="w3css-logo.png" class="align-center" src="images/w3schools1.png" /> W3 CSS
         </a>
     </div>
     <div class="w3-panel w3-center w3-blue-gray w3-display-absolute">
         <a class="w3-button w3-hover-light-gray w3-text-light-gray w3-hover-text-blue-gray" href="https://github.com/devnetkid">devnetkid</a>
     </div>
 </footer>
-{% endblock %}
+
+
+</body>
+</html>
+

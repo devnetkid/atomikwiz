@@ -14,6 +14,10 @@ Options:
 
 """
 
+import jinja2
+import os
+import sys
+
 from docopt import docopt
 
 from atomikwiz import __app_name__, __version__
@@ -77,9 +81,7 @@ def process_images(frontmatter, img_counter):
     # Extract the needed image data from the frontmatter
     img_prefix = frontmatter["img_prefix"]
     img_suffix = frontmatter["img_suffix"]
-    img_path = ("/").join(frontmatter["quiz_path"].split("/")[:-1])
-    img_name = frontmatter["quiz_path"].split("/")[-1]
-    new_img_path = img_path + "/assets/uploads/" + img_name + "/"
+    img_path = frontmatter["quiz_path"]
 
     # Separate the prefix into the name and numbered parts
     prefix_name, prefix_number = img_prefix.split("_")
@@ -89,7 +91,7 @@ def process_images(frontmatter, img_counter):
     post_img_prefix = prefix_name + "_" + str(incremented_prefix).zfill(5)
     src_image = post_img_prefix + "." + img_suffix
 
-    return "<img src=\"" + new_img_path + src_image + "\" />"
+    return "<img src=\"" + img_path + "website/images/" + src_image + "\" />"
 
 
 def extract_options(option_content):
@@ -126,7 +128,6 @@ def gather_questions(questions_content, frontmatter):
     shuffle = False
 
     for line in questions_content:
-        print(line)
         # Ignore blank lines if we are not in the options
         if not line.strip() and not in_options:
             continue
@@ -163,6 +164,52 @@ def gather_questions(questions_content, frontmatter):
     return questions
 
 
+def render_quiz(frontmatter, quiz):
+    # Load template
+    file_loader = jinja2.FileSystemLoader("templates")
+    env = jinja2.Environment(loader=file_loader)
+    start = env.get_template("start.html")
+    end = env.get_template("end.html")
+    questions = env.get_template("questions.html")
+
+    # Get location and confirm path exists
+    quiz_path = frontmatter["quiz_path"] + "website"
+    if not os.path.isdir(quiz_path):
+        os.mkdir(quiz_path)
+
+    # Create the start page
+    start_page = {}
+    start_page["quiz_title"] = frontmatter["quiz_title"]
+    start_page["quiz_date"] = frontmatter["quiz_date"] 
+    start_page["quiz_status"] = frontmatter["quiz_status"]
+    start_page["first_question"] = quiz_path + "/questions/q1.html"
+    rendered_start = start.render(config=start_page)
+    start_filename = quiz_path + "/start.html"
+    with open(start_filename, mode="w") as output:
+        output.write(rendered_start)
+
+    # Create the end page
+    end_page = {}
+    end_page["quiz_title"] = frontmatter["quiz_title"]
+    rendered_end = end.render(config=end_page)
+    end_filename = quiz_path + "/questions/end.html"
+    with open(end_filename, mode="w") as output:
+        output.write(rendered_end)
+
+    for count, each_quiz in enumerate(quiz, start=1):
+        filename = quiz_path + "/questions" + "/q" + str(count) + ".html"
+        next_q = quiz_path + "/questions" "/q" + str(count + 1) + ".html"
+        prev_q = quiz_path + "/questions" "/q" + str(count - 1) + ".html"
+        if count == 1:
+            prev_q = quiz_path + "/start.html"
+        if count == len(quiz):
+            next_q = quiz_path + "/questions/end.html"
+        nav = {"next_question": next_q, "previous_question": prev_q}
+        rendered_vlans = questions.render(config=each_quiz, nav=nav)
+        with open(filename, mode="w") as output:
+            output.write(rendered_vlans)
+
+
 def create_quiz(frontmatter, questions):
     """Create the quiz"""
 
@@ -171,8 +218,9 @@ def create_quiz(frontmatter, questions):
 
     # pluck the questions
     question_data = gather_questions(questions, frontmatter_data)
-    print(question_data)
 
+    # Load and render the quiz
+    render_quiz(frontmatter_data, question_data)
 
 
 def cli():
