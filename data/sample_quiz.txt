@@ -4,30 +4,20 @@ date: 10-05-2024
 status: in-progress
 img_prefix: sample_00000
 img_suffix: png
-quiz_path: /Users/pacman/projects/atomikwiz/
+quiz_path: /Users/username/projects/atomikwiz/
 ---
 
-[Question 1]
-What is the BGP port used for neighbor communication?
-* udp 179
-*= tcp 179
-* tcp 169
-*udp 169
+What is the correct way to make a comment in python code?
 
-[Question 2]
-Refer to the exhibit
-||img.png||
-Is this image displayed correctly?
-*= maybe
-* No
-* Yes
-* Shouldn't be
+    A. <!-- Comment goes here -->
+    B. " Comment goes here
+    C. =# Comment goes here
+    D. /* Comment goes here */
 
-[Question 3]
-This is a multiple choice question?
-*= option1
-*= option2
-* option3
-* option4
+What is the syntax to print hello world in python? (select two)
 
+    A. echo "Hello World"
+    B. =print("Hello World")
+    C. =print "Hello World"
+    D. say "Hello World"
 
