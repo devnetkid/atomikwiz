@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- QUESTION SECTION -->
+<div class="w3-container">
+	<fieldset>
+		<legend>{{ config.legend }}</legend>
+        {%- for eachq in config.quizq %}
+        <div class="w3-panel">
+            {{ eachq }}
+        </div>
+        {%- endfor %}
+		<div class="w3-panel">
+            {%- for option in config.quizo %}
+            <p id="{{ option.opt_count }}">
+            <input class="w3-check" name="user_options" type="{{ option.type }}" value="{{ option.right }}" />
+            <label>{{ option.opt }}</label>
+            </p>
+            {%- endfor %}
+		</div>
+        <div class="w3-panel">
+            <button onclick="check_answer()" class="w3-button w3-teal w3-border w3-round-large">Check Answer</button>
+        </div>
+	</fieldset>
+</div>
+
+
+<!-- EXPLANATION SECTION -->
+<div class="w3-panel">
+  <button onclick="document.getElementById('id02').style.display='block'" class="w3-button w3-blue-gray">Explanation</button>
+
+  <div id="id02" class="w3-modal">
+    <div class="w3-modal-content w3-animate-zoom w3-card-4">
+      <header class="w3-container w3-teal"> 
+        <span onclick="document.getElementById('id02').style.display='none'" 
+        class="w3-button w3-display-topright">&times;</span>
+        <h3>Default Explanation</h3>
+      </header>
+      <div class="w3-container">
+        <p>Currently there is no explanation provided.</p>
+        <ul>
+          <li>Use this section to keep notes of light bulb moments</li>
+          <li>Add links to sites that were useful</li>
+          <li>Write down why the wrong answers are wrong</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FOOTER SECTION -->
+<footer class="w3-container w3-blue-gray w3-margin-top">
+    <a href="{{ nav.previous_question }}" class="w3-button">&#10094; Previous</a>
+    <a href="{{ nav.next_question }}" class="w3-button w3-right">Next &#10095;</a>
+</footer>
+{% endblock %}

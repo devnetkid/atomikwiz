@@ -22,3 +22,6 @@ __pycache__/
 *~
 *.swp
 *.swo
+
+# Don't add any of the generated website data
+website/
