@@ -4,12 +4,12 @@ date: 10-05-2024
 status: in-progress
 img_prefix: sample_00000
 img_suffix: png
-quiz_path: /Users/username/projects/atomikwiz/
+quiz_path: /Users/pacman/projects/atomikwiz/
 ---
 
 What is the correct way to make a comment in python code?
 
-    A. <!-- Comment goes here -->
+    A. \<!-- Comment goes here -->
     B. " Comment goes here
     C. =# Comment goes here
     D. /* Comment goes here */

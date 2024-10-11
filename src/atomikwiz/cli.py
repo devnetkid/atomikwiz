@@ -10,12 +10,14 @@ Arguments:
 
 Options:
     -h --help     Show this screen.
+    -s --shuffle  Randomize the questions and their options
     --version     Show version.
 
 """
 
 import jinja2
 import os
+import random
 import sys
 
 from docopt import docopt
@@ -101,11 +103,11 @@ def extract_options(option_content):
     for line in option_content:
         if line[7] == "=":
             new_line = line.replace("=", "", 1).strip()
-            options.append({"opt": new_line, "opt_count": id_count, "type": "radio", "right": "correct"})
+            options.append({"opt": new_line[3:], "opt_count": id_count, "type": "radio", "right": "correct"})
             id_count += 1
             multi_count += 1
         else:
-            options.append({"opt": line.strip(), "opt_count": id_count, "type": "radio", "right": "incorrect"})
+            options.append({"opt": line.strip()[3:], "opt_count": id_count, "type": "radio", "right": "incorrect"})
             id_count += 1
     if multi_count > 1:
         for option in options:
@@ -113,7 +115,7 @@ def extract_options(option_content):
     return options
 
 
-def gather_questions(questions_content, frontmatter):
+def gather_questions(questions_content, frontmatter, shuffle):
     """
     Evaluate each line forming a dictionary of questions
     """
@@ -125,7 +127,6 @@ def gather_questions(questions_content, frontmatter):
     option_content = []
     in_options = False
     img_counter = 0
-    shuffle = False
 
     for line in questions_content:
         # Ignore blank lines if we are not in the options
@@ -158,9 +159,10 @@ def gather_questions(questions_content, frontmatter):
         # If none of the above matched, assume it is part of the question text
         else:
             tempq.append(line)
-        
-    
-    # Done processing questions
+
+    if shuffle:
+        random.shuffle(questions)
+
     return questions
 
 
@@ -210,14 +212,14 @@ def render_quiz(frontmatter, quiz):
             output.write(rendered_vlans)
 
 
-def create_quiz(frontmatter, questions):
+def create_quiz(frontmatter, questions, shuffle):
     """Create the quiz"""
 
     # Get the frontmatter into a dictionary of key value pairs
     frontmatter_data = obtain_frontmatter(frontmatter)
 
     # pluck the questions
-    question_data = gather_questions(questions, frontmatter_data)
+    question_data = gather_questions(questions, frontmatter_data, shuffle)
 
     # Load and render the quiz
     render_quiz(frontmatter_data, question_data)
@@ -231,6 +233,7 @@ def cli():
     questions = []
     is_frontmatter = True
     is_question = False
+    shuffle = arguments["--shuffle"]
 
     # Load the quiz specified by user
     quiz_data = load_file(arguments["<filename>"])
@@ -247,4 +250,4 @@ def cli():
             questions.append(line)
 
     # Create the quiz with given parameters
-    create_quiz(frontmatter, questions)
+    create_quiz(frontmatter, questions, shuffle)
