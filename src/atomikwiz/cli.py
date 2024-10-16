@@ -1,6 +1,4 @@
 """
-AtomiKwiz
-Static website quiz creator.
 
 Usage:
     atomikwiz [options] <filename>
@@ -9,18 +7,19 @@ Arguments:
     <filename>    The file to be used as the quiz input
 
 Options:
-    -h --help     Show this screen.
-    -s --shuffle  Randomize the questions and their options
-    --version     Show version.
+    -h --help              Show this screen.
+    -o --output <outfile>  Specify the path to write the output to
+    -s --shuffle           Randomize the questions and their options
+    --version              Show version.
 
 """
 
-import jinja2
 import random
 import sys
 from pathlib import Path
 from shutil import copytree, move, rmtree
 
+import jinja2
 from docopt import docopt
 
 from atomikwiz import __app_name__, __version__
@@ -80,7 +79,7 @@ def obtain_frontmatter(frontmatter):
 
 
 def process_images(frontmatter, img_counter):
-    
+
     # Extract the needed image data from the frontmatter
     img_prefix = frontmatter["img_prefix"]
     img_suffix = frontmatter["img_suffix"]
@@ -94,7 +93,7 @@ def process_images(frontmatter, img_counter):
     post_img_prefix = prefix_name + "_" + str(incremented_prefix).zfill(5)
     src_image = post_img_prefix + "." + img_suffix
 
-    return "<img src=\"../images/" + src_image + "\" />"
+    return '<img src="../images/' + src_image + '" />'
 
 
 def extract_options(option_content):
@@ -104,11 +103,25 @@ def extract_options(option_content):
     for line in option_content:
         if line[7] == "=":
             new_line = line.replace("=", "", 1).strip()
-            options.append({"opt": new_line[3:], "opt_count": id_count, "type": "radio", "right": "correct"})
+            options.append(
+                {
+                    "opt": new_line[3:],
+                    "opt_count": id_count,
+                    "type": "radio",
+                    "right": "correct",
+                }
+            )
             id_count += 1
             multi_count += 1
         else:
-            options.append({"opt": line.strip()[3:], "opt_count": id_count, "type": "radio", "right": "incorrect"})
+            options.append(
+                {
+                    "opt": line.strip()[3:],
+                    "opt_count": id_count,
+                    "type": "radio",
+                    "right": "incorrect",
+                }
+            )
             id_count += 1
     if multi_count > 1:
         for option in options:
@@ -167,19 +180,24 @@ def gather_questions(questions_content, frontmatter, shuffle):
     return questions
 
 
-def render_quiz(frontmatter, quiz):
+def render_quiz(frontmatter, quiz, outfile):
 
     # Setup path objects for creating website structure
     project_root = Path(__file__).parent.parent.parent
     data_folder = project_root / "data/web-template"
     users_home = Path.home()
-    website = users_home / "website"
+    if outfile:
+        website = Path(outfile)
+    else:
+        website = users_home / "website"
 
     # Check if specified website already exists
     if website.is_dir():
         response = input(f"The website {website} already exists. Overwrite it? (y|n) ")
         if not response == "y":
-            sys.exit("Please try again after you have renamed/moved current website folder")
+            sys.exit(
+                "Please try again after you have renamed/moved current website folder"
+            )
         else:
             rmtree(website)
 
@@ -195,7 +213,7 @@ def render_quiz(frontmatter, quiz):
     # Create the start page
     start_page = {}
     start_page["quiz_title"] = frontmatter["quiz_title"]
-    start_page["quiz_date"] = frontmatter["quiz_date"] 
+    start_page["quiz_date"] = frontmatter["quiz_date"]
     start_page["quiz_status"] = frontmatter["quiz_status"]
     start_page["first_question"] = "questions/q1.html"
     rendered_start = start.render(config=start_page)
@@ -225,7 +243,7 @@ def render_quiz(frontmatter, quiz):
             output.write(rendered_vlans)
 
 
-def create_quiz(frontmatter, questions, shuffle):
+def create_quiz(frontmatter, questions, shuffle, outfile):
     """Create the quiz"""
 
     # Get the frontmatter into a dictionary of key value pairs
@@ -235,7 +253,7 @@ def create_quiz(frontmatter, questions, shuffle):
     question_data = gather_questions(questions, frontmatter_data, shuffle)
 
     # Load and render the quiz
-    render_quiz(frontmatter_data, question_data)
+    render_quiz(frontmatter_data, question_data, outfile)
 
 
 def cli():
@@ -247,6 +265,7 @@ def cli():
     is_frontmatter = True
     is_question = False
     shuffle = arguments["--shuffle"]
+    outfile = arguments["--output"]
 
     # Load the quiz specified by user
     quiz_data = load_file(arguments["<filename>"])
@@ -263,4 +282,4 @@ def cli():
             questions.append(line)
 
     # Create the quiz with given parameters
-    create_quiz(frontmatter, questions, shuffle)
+    create_quiz(frontmatter, questions, shuffle, outfile)
