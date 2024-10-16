@@ -16,9 +16,10 @@ Options:
 """
 
 import jinja2
-import os
 import random
 import sys
+from pathlib import Path
+from shutil import copytree, move, rmtree
 
 from docopt import docopt
 
@@ -93,7 +94,7 @@ def process_images(frontmatter, img_counter):
     post_img_prefix = prefix_name + "_" + str(incremented_prefix).zfill(5)
     src_image = post_img_prefix + "." + img_suffix
 
-    return "<img src=\"" + img_path + "website/images/" + src_image + "\" />"
+    return "<img src=\"../images/" + src_image + "\" />"
 
 
 def extract_options(option_content):
@@ -167,6 +168,23 @@ def gather_questions(questions_content, frontmatter, shuffle):
 
 
 def render_quiz(frontmatter, quiz):
+
+    # Setup path objects for creating website structure
+    project_root = Path(__file__).parent.parent.parent
+    data_folder = project_root / "data/web-template"
+    users_home = Path.home()
+    website = users_home / "website"
+
+    # Check if specified website already exists
+    if website.is_dir():
+        response = input(f"The website {website} already exists. Overwrite it? (y|n) ")
+        if not response == "y":
+            sys.exit("Please try again after you have renamed/moved current website folder")
+        else:
+            rmtree(website)
+
+    copytree(data_folder, website)
+
     # Load template
     file_loader = jinja2.FileSystemLoader("templates")
     env = jinja2.Environment(loader=file_loader)
@@ -174,19 +192,14 @@ def render_quiz(frontmatter, quiz):
     end = env.get_template("end.html")
     questions = env.get_template("questions.html")
 
-    # Get location and confirm path exists
-    quiz_path = frontmatter["quiz_path"] + "website"
-    if not os.path.isdir(quiz_path):
-        os.mkdir(quiz_path)
-
     # Create the start page
     start_page = {}
     start_page["quiz_title"] = frontmatter["quiz_title"]
     start_page["quiz_date"] = frontmatter["quiz_date"] 
     start_page["quiz_status"] = frontmatter["quiz_status"]
-    start_page["first_question"] = quiz_path + "/questions/q1.html"
+    start_page["first_question"] = "questions/q1.html"
     rendered_start = start.render(config=start_page)
-    start_filename = quiz_path + "/start.html"
+    start_filename = str(website) + "/start.html"
     with open(start_filename, mode="w") as output:
         output.write(rendered_start)
 
@@ -194,18 +207,18 @@ def render_quiz(frontmatter, quiz):
     end_page = {}
     end_page["quiz_title"] = frontmatter["quiz_title"]
     rendered_end = end.render(config=end_page)
-    end_filename = quiz_path + "/questions/end.html"
+    end_filename = str(website) + "/questions/end.html"
     with open(end_filename, mode="w") as output:
         output.write(rendered_end)
 
     for count, each_quiz in enumerate(quiz, start=1):
-        filename = quiz_path + "/questions" + "/q" + str(count) + ".html"
-        next_q = quiz_path + "/questions" "/q" + str(count + 1) + ".html"
-        prev_q = quiz_path + "/questions" "/q" + str(count - 1) + ".html"
+        filename = str(website) + "/questions/q" + str(count) + ".html"
+        next_q = "q" + str(count + 1) + ".html"
+        prev_q = "q" + str(count - 1) + ".html"
         if count == 1:
-            prev_q = quiz_path + "/start.html"
+            prev_q = "../start.html"
         if count == len(quiz):
-            next_q = quiz_path + "/questions/end.html"
+            next_q = "end.html"
         nav = {"next_question": next_q, "previous_question": prev_q}
         rendered_vlans = questions.render(config=each_quiz, nav=nav)
         with open(filename, mode="w") as output:
@@ -226,7 +239,7 @@ def create_quiz(frontmatter, questions, shuffle):
 
 
 def cli():
-    # Get the user input and create the quiz
+    # Get the users input and create the quiz
     arguments = docopt(__doc__, version=__version__)
 
     frontmatter = []
