@@ -9,6 +9,7 @@ Arguments:
 Options:
     -c --count             Return the total number of questions
     -h --help              Show this screen.
+    -l --list              List out all available kwiz'z
     -o --output <outfile>  Specify the path to write the output to
     -s --shuffle           Randomize the questions and their options
     --version              Show version.
@@ -181,11 +182,20 @@ def gather_questions(questions_content, frontmatter, shuffle):
     return questions
 
 
-def render_quiz(frontmatter, quiz, outfile):
+def render_quiz(frontmatter, quiz, outfile, list_kwiz):
 
     # Setup path objects for creating website structure
     project_root = Path(__file__).parent.parent.parent
     data_folder = project_root / "data/web-template"
+
+    if list_kwiz:
+        kwizez = project_root / "data"
+        for kwiz in kwizez.glob("**/*"):
+            if kwiz.is_file():
+                if "quiz" in kwiz.name:
+                    print(kwiz.name)
+        sys.exit()
+
     users_home = Path.home()
     if outfile:
         website = Path(outfile)
@@ -244,7 +254,7 @@ def render_quiz(frontmatter, quiz, outfile):
             output.write(rendered_vlans)
 
 
-def create_quiz(frontmatter, questions, shuffle, outfile, count):
+def create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz):
     """Create the quiz"""
 
     # Get the frontmatter into a dictionary of key value pairs
@@ -256,7 +266,7 @@ def create_quiz(frontmatter, questions, shuffle, outfile, count):
         sys.exit(f"This quiz contains {len(question_data)} questions")
 
     # Load and render the quiz
-    render_quiz(frontmatter_data, question_data, outfile)
+    render_quiz(frontmatter_data, question_data, outfile, list_kwiz)
 
 
 def cli():
@@ -270,6 +280,7 @@ def cli():
     shuffle = arguments["--shuffle"]
     outfile = arguments["--output"]
     count = arguments["--count"]
+    list_kwiz = arguments["--list"]
 
     # Load the quiz specified by user
     quiz_data = load_file(arguments["<filename>"])
@@ -286,4 +297,4 @@ def cli():
             questions.append(line)
 
     # Create the quiz with given parameters
-    create_quiz(frontmatter, questions, shuffle, outfile, count)
+    create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz)
