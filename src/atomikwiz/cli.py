@@ -7,6 +7,7 @@ Arguments:
     <filename>    The file to be used as the quiz input
 
 Options:
+    -c --count             Return the total number of questions
     -h --help              Show this screen.
     -o --output <outfile>  Specify the path to write the output to
     -s --shuffle           Randomize the questions and their options
@@ -243,7 +244,7 @@ def render_quiz(frontmatter, quiz, outfile):
             output.write(rendered_vlans)
 
 
-def create_quiz(frontmatter, questions, shuffle, outfile):
+def create_quiz(frontmatter, questions, shuffle, outfile, count):
     """Create the quiz"""
 
     # Get the frontmatter into a dictionary of key value pairs
@@ -251,6 +252,8 @@ def create_quiz(frontmatter, questions, shuffle, outfile):
 
     # pluck the questions
     question_data = gather_questions(questions, frontmatter_data, shuffle)
+    if count:
+        sys.exit(f"This quiz contains {len(question_data)} questions")
 
     # Load and render the quiz
     render_quiz(frontmatter_data, question_data, outfile)
@@ -266,6 +269,7 @@ def cli():
     is_question = False
     shuffle = arguments["--shuffle"]
     outfile = arguments["--output"]
+    count = arguments["--count"]
 
     # Load the quiz specified by user
     quiz_data = load_file(arguments["<filename>"])
@@ -282,4 +286,4 @@ def cli():
             questions.append(line)
 
     # Create the quiz with given parameters
-    create_quiz(frontmatter, questions, shuffle, outfile)
+    create_quiz(frontmatter, questions, shuffle, outfile, count)
