@@ -7,12 +7,13 @@ Arguments:
     <filename>    The file to be used as the quiz input
 
 Options:
-    -c --count             Return the total number of questions
-    -h --help              Show this screen.
-    -l --list              List out all available kwiz'z
-    -o --output <outfile>  Specify the path to write the output to
-    -s --shuffle           Randomize the questions and their options
-    --version              Show version.
+    -c --count                  Return the total number of questions
+    -h --help                   Show this screen.
+    -l --list                   List out all available kwiz'z
+    -n <num> --number <num>     Pull n number of questions from the quiz
+    -o --output <outfile>       Specify the path to write the output to
+    -s --shuffle                Randomize the questions and their options
+    --version                   Show version.
 
 """
 
@@ -254,7 +255,7 @@ def render_quiz(frontmatter, quiz, outfile, list_kwiz):
             output.write(rendered_vlans)
 
 
-def create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz):
+def create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz, number):
     """Create the quiz"""
 
     # Get the frontmatter into a dictionary of key value pairs
@@ -264,6 +265,8 @@ def create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz):
     question_data = gather_questions(questions, frontmatter_data, shuffle)
     if count:
         sys.exit(f"This quiz contains {len(question_data)} questions")
+    if number:
+        question_data = question_data[:int(number)]
 
     # Load and render the quiz
     render_quiz(frontmatter_data, question_data, outfile, list_kwiz)
@@ -272,6 +275,7 @@ def create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz):
 def cli():
     # Get the users input and create the quiz
     arguments = docopt(__doc__, version=__version__)
+    print(arguments)
 
     frontmatter = []
     questions = []
@@ -281,6 +285,7 @@ def cli():
     outfile = arguments["--output"]
     count = arguments["--count"]
     list_kwiz = arguments["--list"]
+    number = arguments["--number"]
 
     # Load the quiz specified by user
     quiz_data = load_file(arguments["<filename>"])
@@ -297,4 +302,4 @@ def cli():
             questions.append(line)
 
     # Create the quiz with given parameters
-    create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz)
+    create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz, number)
