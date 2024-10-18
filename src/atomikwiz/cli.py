@@ -183,13 +183,13 @@ def gather_questions(questions_content, frontmatter, shuffle):
     return questions
 
 
-def render_quiz(frontmatter, quiz, outfile, list_kwiz):
+def render_quiz(frontmatter, quiz, arguments):
 
     # Setup path objects for creating website structure
     project_root = Path(__file__).parent.parent.parent
     data_folder = project_root / "data/web-template"
 
-    if list_kwiz:
+    if arguments["--list"]:
         kwizez = project_root / "data"
         for kwiz in kwizez.glob("**/*"):
             if kwiz.is_file():
@@ -198,8 +198,8 @@ def render_quiz(frontmatter, quiz, outfile, list_kwiz):
         sys.exit()
 
     users_home = Path.home()
-    if outfile:
-        website = Path(outfile)
+    if arguments["--output"]:
+        website = Path(arguments["--output"])
     else:
         website = users_home / "website"
 
@@ -255,43 +255,14 @@ def render_quiz(frontmatter, quiz, outfile, list_kwiz):
             output.write(rendered_vlans)
 
 
-def create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz, number):
-    """Create the quiz"""
-
-    # Get the frontmatter into a dictionary of key value pairs
-    frontmatter_data = obtain_frontmatter(frontmatter)
-
-    # pluck the questions
-    question_data = gather_questions(questions, frontmatter_data, shuffle)
-    if count:
-        sys.exit(f"This quiz contains {len(question_data)} questions")
-    if number:
-        question_data = question_data[:int(number)]
-
-    # Load and render the quiz
-    render_quiz(frontmatter_data, question_data, outfile, list_kwiz)
-
-
-def cli():
-    # Get the users input and create the quiz
-    arguments = docopt(__doc__, version=__version__)
-    print(arguments)
-
+def retreive_parts(kwiz):
     frontmatter = []
     questions = []
     is_frontmatter = True
     is_question = False
-    shuffle = arguments["--shuffle"]
-    outfile = arguments["--output"]
-    count = arguments["--count"]
-    list_kwiz = arguments["--list"]
-    number = arguments["--number"]
-
-    # Load the quiz specified by user
-    quiz_data = load_file(arguments["<filename>"])
 
     # Separate the frontmatter from the questions
-    for line in quiz_data[1:]:
+    for line in kwiz[1:]:
         if line.startswith("---"):
             is_frontmatter = False
             is_question = True
@@ -301,5 +272,35 @@ def cli():
         if is_question:
             questions.append(line)
 
+    return frontmatter, questions
+
+
+def create_quiz(arguments):
+    """Create the quiz"""
+
+    quiz_data = load_file(arguments["<filename>"])
+
+    # Separate the frontmatter and questions
+    frontmatter, questions = retreive_parts(quiz_data)
+
+    # Get the frontmatter into a dictionary of key value pairs
+    frontmatter_data = obtain_frontmatter(frontmatter)
+
+    # pluck the questions
+    question_data = gather_questions(questions, frontmatter_data, arguments["--shuffle"])
+    if arguments["--count"]:
+        sys.exit(f"This quiz contains {len(question_data)} questions")
+    if arguments["--number"]:
+        question_data = question_data[:int(arguments["--number"])]
+
+    # Load and render the quiz
+    render_quiz(frontmatter_data, question_data, arguments)
+
+
+def cli():
+    # Get the users input and create the quiz
+    arguments = docopt(__doc__, version=__version__)
+
     # Create the quiz with given parameters
-    create_quiz(frontmatter, questions, shuffle, outfile, count, list_kwiz, number)
+    create_quiz(arguments)
+
