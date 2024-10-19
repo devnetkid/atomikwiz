@@ -199,7 +199,7 @@ def render_quiz(frontmatter, quiz, arguments):
 
     users_home = Path.home()
     if arguments["--output"]:
-        website = Path(arguments["--output"])
+        website = users_home / Path(arguments["--output"])
     else:
         website = users_home / "website"
 
